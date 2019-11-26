@@ -6,6 +6,7 @@
 Recorrido::Recorrido(Estacion* origen, Estacion* destino) {
 	this->origen = origen;
 	this->destino = destino;
+	this->distancia = this->calcularDistancia();
 }
 
 Recorrido& Recorrido::operator= (const Recorrido& recorrido) {
@@ -39,4 +40,12 @@ bool Recorrido::esIgual(Recorrido*& recorrido) {
 
 	return sonIguales;
 }
+
+double Recorrido::calcularDistancia(){
+	Coordenadas origen = this->origen->getCoordenadas();
+	Coordenadas destino = this->destino->getCoordenadas();
+	double distancia = origen.distancia(destino);
+	return distancia;
+}
+
 

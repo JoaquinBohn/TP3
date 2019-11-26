@@ -7,6 +7,7 @@ class Recorrido {
 private:
 	Estacion* origen;
 	Estacion* destino;
+	double distancia;
 
 public:
 
@@ -23,6 +24,8 @@ public:
 	void setOrigen(Estacion*&);
 
 	bool esIgual(Recorrido*& recorrido);
+
+	double calcularDistancia();
 };
 
 #endif /* RECORRIDO_H_ */

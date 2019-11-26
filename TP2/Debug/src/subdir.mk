@@ -7,7 +7,6 @@ CPP_SRCS += \
 ../src/EasyBMP.cpp \
 ../src/EasyBMP_Font.cpp \
 ../src/EasyBMP_Geometry.cpp \
-../src/arista.cpp \
 ../src/auxiliar.cpp \
 ../src/camino.cpp \
 ../src/coordenadas.cpp \
@@ -21,7 +20,6 @@ OBJS += \
 ./src/EasyBMP.o \
 ./src/EasyBMP_Font.o \
 ./src/EasyBMP_Geometry.o \
-./src/arista.o \
 ./src/auxiliar.o \
 ./src/camino.o \
 ./src/coordenadas.o \
@@ -35,7 +33,6 @@ CPP_DEPS += \
 ./src/EasyBMP.d \
 ./src/EasyBMP_Font.d \
 ./src/EasyBMP_Geometry.d \
-./src/arista.d \
 ./src/auxiliar.d \
 ./src/camino.d \
 ./src/coordenadas.d \

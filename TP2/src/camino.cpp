@@ -16,6 +16,7 @@ Camino::Camino() {
 	this->camino = new Lista<Recorrido*>;
 	this->conAuto = false;
 	this->preferencia = indefinido;
+	this->distanciaCamino = 0;
 }
 
 Camino::Camino(Lista<Estacion*>* transportes) {
@@ -23,6 +24,7 @@ Camino::Camino(Lista<Estacion*>* transportes) {
 	this->transportes = transportes;
 	this->conAuto = false;
 	this->preferencia = indefinido;
+	this->distanciaCamino = 0;
 }
 
 Camino::Camino(Lista<Estacion*>* transportes, Coordenadas& origen, Coordenadas& destino, int distancia, TipoEstacion tipo, bool conAuto) {
@@ -34,6 +36,7 @@ Camino::Camino(Lista<Estacion*>* transportes, Coordenadas& origen, Coordenadas& 
 Camino::~Camino() {
 	limpiarCamino();
 }
+
 
 unsigned int Camino::lineaEsta(Lista<Estacion*> &lista, Estacion* &buscada) {
 	bool esta = false;
@@ -223,8 +226,9 @@ bool Camino::generarCamino(Coordenadas& origen, Coordenadas& destino, int distan
 			/* no puedo llegar al destino final, no hay camino */
 			limpiarCamino();
 			hayCaminos = false;
-		} else {
+		} else{
 			this->camino->agregar(recorrido);
+			this->distanciaCamino += recorrido->calcularDistancia();
 
 			if (estoyCerca(recorrido, distancia)) {
 				/* llegue a mi destino final, fin del camino */

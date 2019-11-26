@@ -27,6 +27,8 @@ private:
 	/* coordenadas del punto de llegada del camino */
 	Coordenadas destino;
 
+	double distanciaCamino;
+
 	/* que medio de transporte se prefiera utilizar.
 	 * si no se encuentra un recorrido se utiliza otro medio de transporte */
 	TipoEstacion preferencia;

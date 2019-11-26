@@ -18,6 +18,7 @@ bool caminoEsNuevo(Lista<Camino*>& caminos, Camino*& camino) {
 	return caminoNuevo;
 }
 
+
 void mostrarCaminos(Lista<Camino*>& caminos) {
 	Camino* camino;
 	caminos.iniciarCursor();
@@ -45,12 +46,17 @@ void armarCaminos(Transporte& transporte) {
 	}
 
 	for (unsigned int i = 0; i < cantidad; i++) {
-		camino = new Camino(transporte.getTransportes(), origen, destino, distancia, tipos[i], conAuto);
+		for(unsigned int j=0; j<3; j++){
+			camino = new Camino(transporte.getTransportes(), origen, destino, distancia, tipos[i], conAuto);
 
-		if (caminoEsNuevo(caminos, camino)) {
-			caminos.agregar(camino);
-		} else {
-			delete camino;
+			if (caminoEsNuevo(caminos, camino)) {
+				/*implementar caminoEsMasCorto*/
+				if(caminoEsMasCorto(caminos, camino, tipos[i])){
+					caminos.agregar(camino);
+				}
+			} else {
+				delete camino;
+			}
 		}
 	}
 
