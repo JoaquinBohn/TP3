@@ -1,8 +1,10 @@
 /*
  * archivo.cpp
  *
- *  Created on: Oct 18, 2019
- *      Author: cristian
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #include <string>
@@ -14,8 +16,18 @@
 #include "auxiliar.h"
 #include "transporte.h"
 
+const int Transporte::ID = 0;
+const int Transporte::NOMBRE = 1;
+const int Transporte::LATITUD = 2;
+const int Transporte::LONGITUD = 3;
+const int Transporte::LINEA = 4;
+const int Transporte::IGNORAR = -1;
+const int Transporte::FIN = -2;
+
 Transporte::Transporte() {
 	this->transportes = new Lista<Estacion*>;
+
+	/* se incializan el minimo y el maximo con valores extremos */
 	this->minimo = Coordenadas(1000, 1000);
 	this->maximo = Coordenadas(-1000, -1000);
 }
@@ -43,158 +55,66 @@ void Transporte::ajustarMinimoYMaximo(Coordenadas& coordenadas) {
 	}
 }
 
-void Transporte::agregarEstacionColectivo(std::string &registro) {
-	double longitud;
-	double latitud;
-	std::string id;
-	std::string nombre;
-	std::string direccion;
-	std::string sentido;
-	std::string lineaTransporte;
+unsigned int Transporte::lineaEsta(Lista<Estacion*> &lista, Estacion* &buscada) {
+	bool esta = false;
+	int posicion = 0;
 
-	std::string celda;
-	std::stringstream streamDeCadena(registro);
-
-	getline(streamDeCadena, id, ','); // id
-	getline(streamDeCadena, celda, ','); // code
-	getline(streamDeCadena, celda, ','); // name
-	nombre = celda;
-	direccion = celda;
-	getline(streamDeCadena, celda, ','); // latitud
-	latitud = stringADouble(celda);
-	getline(streamDeCadena, celda, ','); // longitud
-	longitud = stringADouble(celda);
-	Coordenadas coordenadas(longitud, latitud);
-	getline(streamDeCadena, sentido, ','); // direction
-	getline(streamDeCadena, celda, ','); // route
-	getline(streamDeCadena, celda, ','); // agency
-	getline(streamDeCadena, celda, ','); // route_short_name (linea)
-	lineaTransporte = celda + "*" + sentido;
-
-	Estacion* estacion = new Estacion(colectivo, id, lineaTransporte, nombre, direccion, coordenadas);
-	this->ajustarMinimoYMaximo(coordenadas);
-	this->transportes->agregar(estacion);
-}
-
-void Transporte::agregarEstacionSubte(std::string &registro) {
-	double longitud;
-	double latitud;
-	std::string id;
-	std::string nombre;
-	std::string direccion;
-	std::string lineaTransporte;
-
-	std::string celda;
-	std::stringstream streamDeCadena(registro);
-
-	getline(streamDeCadena, celda, ','); // longitud
-	longitud = stringADouble(celda);
-	getline(streamDeCadena, celda, ','); // latitud
-	latitud = stringADouble(celda);
-	Coordenadas coordenadas(longitud, latitud);
-	getline(streamDeCadena, id, ','); // id
-	getline(streamDeCadena, lineaTransporte, ','); // line
-	getline(streamDeCadena, nombre, ','); // estacion
-	for (int i = 0; i < 17; i++) {
-		getline(streamDeCadena, celda, ','); // campos a ignorar
+	lista.iniciarCursor();
+	while(!esta && lista.avanzarCursor()) {
+		posicion++;
+		Estacion* e = lista.obtenerCursor();
+		if (e->getLinea().compare(buscada->getLinea()) == 0) {
+			esta = true;
+		}
 	}
-	getline(streamDeCadena, direccion, ','); // dom_orig
 
-	Estacion* estacion = new Estacion(subte, id, lineaTransporte, nombre, direccion, coordenadas);
-	this->ajustarMinimoYMaximo(coordenadas);
-	this->transportes->agregar(estacion);
+	return (esta) ? posicion : 0;
 }
 
-void Transporte::agregarEstacionTren(std::string &registro) {
-	double longitud;
-	double latitud;
-	std::string id;
-	std::string nombre;
-	std::string direccion;
-	std::string lineaTransporte;
+void Transporte::agregarEstacion(std::string& registro, TipoEstacion tipo, int orden[], char separador) {
+	/* los valores que nos interesan se guardan en este arreglo de strings */
+	std::string campos[] = {"", "", "", "", ""};
+
+	unsigned int contadorRegistro = 0;
+	unsigned int contadorCampos = 0;
 
 	std::string celda;
+	std::string celda2;
 	std::stringstream streamDeCadena(registro);
 
-	getline(streamDeCadena, celda, ','); // longitud
-	longitud = stringADouble(celda);
-	getline(streamDeCadena, celda, ','); // latitud
-	latitud = stringADouble(celda);
-	Coordenadas coordenadas(longitud, latitud);
-	getline(streamDeCadena, id, ','); // id
-	getline(streamDeCadena, nombre, ','); // nombre
-	direccion = nombre;
-	getline(streamDeCadena, lineaTransporte, ','); // linea
-	getline(streamDeCadena, celda, ','); // linea2
-	getline(streamDeCadena, celda, ','); // ramal
-	lineaTransporte += " (" + celda + ")";
-
-	Estacion* estacion = new Estacion(tren, id, lineaTransporte, nombre, direccion, coordenadas);
-	this->ajustarMinimoYMaximo(coordenadas);
-	this->transportes->agregar(estacion);
-}
-
-void Transporte::agregarEstacionMetrobus(std::string &registro) {
-	double longitud;
-	double latitud;
-	std::string id;
-	std::string nombre;
-	std::string direccion;
-	std::string lineaTransporte;
-
-	std::string celda;
-	std::stringstream streamDeCadena(registro);
-
-	getline(streamDeCadena, celda, ','); // longitud
-	longitud = stringADouble(celda);
-	getline(streamDeCadena, celda, ','); // latitud
-	latitud = stringADouble(celda);
-	Coordenadas coordenadas(longitud, latitud);
-	getline(streamDeCadena, id, ','); // id
-	for (int i = 0; i < 6; i++) {
-		getline(streamDeCadena, celda, ','); // campos a ignorar
+	while(orden[contadorRegistro] != FIN && getline(streamDeCadena, celda, ',')) {
+		if (celda.length() > 0 && celda.at(0) == '"') {
+			/* el campo contiene un valor con coma.
+			 * se combian dos campos para formar uno solo */
+			getline(streamDeCadena, celda2, ',');
+			celda = celda + "," + celda2;
+			celda = celda.substr(1, celda.length() - 2);
+		}
+		if (orden[contadorRegistro] != IGNORAR) {
+			if (campos[orden[contadorRegistro]].length() == 0) {
+				campos[orden[contadorRegistro]] = celda;
+			} else {
+				/* se combinan varios valores si el campo que nos interesa
+				 * esta formado por la combinacion de varios campos, utilizando
+				 * un caracter de concatenacion que puede variar segun las necesidades */
+				campos[orden[contadorRegistro]] = celda + separador + campos[orden[contadorRegistro]];
+			}
+			contadorCampos++;
+		}
+		contadorRegistro++;
 	}
-	getline(streamDeCadena, lineaTransporte, ','); // linea
-	getline(streamDeCadena, nombre, ','); // nombre
 
-	Estacion* estacion = new Estacion(metrobus, id, lineaTransporte, nombre, direccion, coordenadas);
-	this->ajustarMinimoYMaximo(coordenadas);
-	this->transportes->agregar(estacion);
-}
+	Coordenadas coordenadas(stringADouble(campos[LONGITUD]), stringADouble(campos[LATITUD]));
 
-void Transporte::agregarEstacionGaraje(std::string &registro) {
-	double longitud;
-	double latitud;
-	std::string id;
-	std::string nombre;
-	std::string direccion;
-	std::string altura;
-	std::string lineaTransporte;
-
-	std::string celda;
-	std::stringstream streamDeCadena(registro);
-
-	getline(streamDeCadena, celda, ','); // longitud
-	longitud = stringADouble(celda);
-	getline(streamDeCadena, celda, ','); // latitud
-	latitud = stringADouble(celda);
-	Coordenadas coordenadas(longitud, latitud);
-	getline(streamDeCadena, id, ','); // smp
-	getline(streamDeCadena, direccion, ','); // calle
-	getline(streamDeCadena, altura, ','); // altura
-	direccion = direccion + " " + altura;
-	nombre = direccion;
-	getline(streamDeCadena, celda, ','); // tipo1
-	getline(streamDeCadena, lineaTransporte, ','); // tipo2
-
-	if (lineaTransporte.compare("CERRADO")) {
-		Estacion* estacion = new Estacion(garaje, id, lineaTransporte, nombre, direccion, coordenadas);
+	if (tipo != garaje || campos[LINEA].compare("CERRADO") != 0) {
+		/* solo agrego la estacion si no corresponde a un garaje cerrado */
+		Estacion* estacion = new Estacion(tipo, campos[ID], campos[LINEA], campos[NOMBRE], coordenadas);
 		this->ajustarMinimoYMaximo(coordenadas);
 		this->transportes->agregar(estacion);
 	}
 }
 
-void Transporte::cargarArchivo(const char* archivo, TipoEstacion tipo) {
+void Transporte::cargarArchivo(const char* archivo, TipoEstacion tipo, int orden[], char separador) {
 	std::ifstream entrada;
 	std::string registro;
 
@@ -203,53 +123,44 @@ void Transporte::cargarArchivo(const char* archivo, TipoEstacion tipo) {
 		throw std::string("No se pudo abrir ") + std::string(archivo);
 	}
 
-	// lee la linea con el nombre de los campos
+	/* lee la linea con el nombre de los campos */
 	getline(entrada, registro);
 
-	// se leen los registros del archivo hasta llegar al final
+	/* se leen los registros del archivo hasta llegar al final */
 	while (getline(entrada, registro)) {
-		switch(tipo) {
-			case colectivo:
-				agregarEstacionColectivo(registro);
-				break;
-			case subte:
-				agregarEstacionSubte(registro);
-				break;
-			case tren:
-				agregarEstacionTren(registro);
-				break;
-			case metrobus:
-				agregarEstacionMetrobus(registro);
-				break;
-			case garaje:
-				agregarEstacionGaraje(registro);
-				break;
-			case indefinido:
-				break;
-		}
+		agregarEstacion(registro, tipo, orden, separador);
 	}
 	entrada.close();
 }
 
 void Transporte::cargarTransportes() {
+	/* para los campos que nos interesan se indica a que posicion del
+	 * arreglo de campos deben ir, ver agregarEstacion().
+	 * los campos que no nos interesan se marcan para ser ignorados */
+	int ordenColectivo[] = {ID, IGNORAR, NOMBRE, LATITUD, LONGITUD, LINEA, IGNORAR, IGNORAR, LINEA, FIN};
+	int ordenSubte[] = {LONGITUD, LATITUD, ID, LINEA, NOMBRE, FIN};
+	int ordenTren[] = {LONGITUD, LATITUD, ID, NOMBRE, LINEA, IGNORAR, LINEA, FIN};
+	int ordenMetrobus[] = {LONGITUD, LATITUD, ID, IGNORAR, IGNORAR, IGNORAR, IGNORAR, IGNORAR, IGNORAR, LINEA, NOMBRE, FIN};
+	int ordenGarajes[] = {LONGITUD, LATITUD, ID, NOMBRE, NOMBRE, IGNORAR, LINEA, FIN};
+
 	std::cout << "Cargando colectivos (lento)..." << std::endl;
-	cargarArchivo("paradas-de-colectivo.csv", colectivo);
+	cargarArchivo("paradas-de-colectivo.csv", colectivo, ordenColectivo, '*');
 	std::cout << "Colectivos cargados!" << std::endl;
 
 	std::cout << "Cargando subtes..." << std::endl;
-	cargarArchivo("bocas-de-subte.csv", subte);
+	cargarArchivo("bocas-de-subte.csv", subte, ordenSubte, ' ');
 	std::cout << "Subtes cargados!" << std::endl;
 
 	std::cout << "Cargando trenes..." << std::endl;
-	cargarArchivo("estaciones-de-ferrocarril.csv", tren);
+	cargarArchivo("estaciones-de-ferrocarril.csv", tren, ordenTren, '-');
 	std::cout << "Trenes cargados!" << std::endl;
 
 	std::cout << "Cargando metrobus..." << std::endl;
-	cargarArchivo("estaciones-de-metrobus.csv", metrobus);
+	cargarArchivo("estaciones-de-metrobus.csv", metrobus, ordenMetrobus, ' ');
 	std::cout << "Metrobus cargado!" << std::endl;
 
 	std::cout << "Cargando garajes..." << std::endl;
-	cargarArchivo("garajes-comerciales.csv", garaje);
+	cargarArchivo("garajes-comerciales.csv", garaje, ordenGarajes, ' ');
 	std::cout << "Garajes cargados!" << std::endl;
 	std::cout << std::endl;
 }

@@ -1,8 +1,10 @@
 /*
  * coordenadas.h
  *
- *  Created on: 9 oct. 2019
- *      Author: joaquin
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #ifndef COORDENADAS_H_
@@ -36,7 +38,7 @@ public:
 	 * Precondicion: -
 	 * Postcondicion: devuelve el valor de la longitud.
 	 */
-	double getLongitud();
+	double getLongitud() const;
 
 	void setLongitud(double);
 
@@ -44,15 +46,15 @@ public:
 	 * Precondicion: -
 	 * Postcondicion: devuelve el valor de la latitud.
 	 */
-	double getLatitud();
+	double getLatitud() const;
 
 	void setLatitud(double);
 
 	/*Calcular distancia:
 	 * Precondicion: recibe otro objeto coordenadas.
-	 * Postcondicion: devuelve el valor de la distancia entre ambas coordenadas.
+	 * Postcondicion: devuelve el valor de la distancia en metros entre ambas coordenadas.
 	 */
-	double distancia(Coordenadas& c);
+	double distancia(const Coordenadas& c) const;
 
 	/*Calcular la mas cercana:
 	 * Precondicion: recibe dos objetos coordenadas.

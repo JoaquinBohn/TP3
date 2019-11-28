@@ -1,42 +1,48 @@
 /*
  * ruta.cpp
  *
- *  Created on: Oct 30, 2019
- *      Author: cristian
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
-#include "camino.h"
 #include <iostream>
+#include <ctime>
+#include <sstream>
+#include "camino.h"
 #include "EasyBMP.h"
 #include "EasyBMP_Font.h"
 #include "EasyBMP_Geometry.h"
 
-Camino::Camino() {
-	this->transportes = NULL;
-	this->camino = new Lista<Recorrido*>;
-	this->conAuto = false;
-	this->preferencia = indefinido;
-	this->distanciaCamino = 0;
-}
+const int Camino::MAX_CONEXIONES = 3;
+const int Camino::MAX_CONEXIONES_POR_TIPO = 7;
+const double Camino::DISTANCIA_ABSURDA = 10000000;
 
 Camino::Camino(Lista<Estacion*>* transportes) {
 	this->camino = new Lista<Recorrido*>;
 	this->transportes = transportes;
 	this->conAuto = false;
-	this->preferencia = indefinido;
-	this->distanciaCamino = 0;
-}
-
-Camino::Camino(Lista<Estacion*>* transportes, Coordenadas& origen, Coordenadas& destino, int distancia, TipoEstacion tipo, bool conAuto) {
-	this->camino = new Lista<Recorrido*>;
-	this->transportes = transportes;
-	generarCamino(origen, destino, distancia, tipo, conAuto);
+	this->recorridoFinalDelCaminoMasCorto = NULL;
+	this->distanciaFinal = DISTANCIA_ABSURDA;
+	this->distanciaCaminar = 0;
 }
 
 Camino::~Camino() {
 	limpiarCamino();
 }
 
+bool Camino::buscarRecorridoEnCamino(Recorrido* recorrido) {
+	bool encontrado = false;
+	this->camino->iniciarCursor();
+	while (!encontrado && this->camino->avanzarCursor()) {
+		if (recorrido == this->camino->obtenerCursor()) {
+			encontrado = true;
+		}
+	}
+
+	return encontrado;
+}
 
 unsigned int Camino::lineaEsta(Lista<Estacion*> &lista, Estacion* &buscada) {
 	bool esta = false;
@@ -52,119 +58,6 @@ unsigned int Camino::lineaEsta(Lista<Estacion*> &lista, Estacion* &buscada) {
 	}
 
 	return (esta) ? posicion : 0;
-}
-
-Recorrido* Camino::generarRecorrido(Coordenadas& origen, int metros, TipoEstacion tipo) {
-	Lista<Estacion*> paradasOrigen;
-	Recorrido* recorrido = NULL;
-
-	double distancia;
-	this->transportes->iniciarCursor();
-
-	/* recorro la lista de medios de transporte buscando estaciones que esten a
-	 * "metros" de distancia del origen
-	 */
-	while(this->transportes->avanzarCursor()) {
-		Estacion* e = this->transportes->obtenerCursor();
-
-		/* si tipo no es indefinido, descarto las estaciones que no coincidan con el tipo indicado */
-		if (tipo == indefinido || e->getTipo() == tipo) {
-
-			/* si no uso el auto descarto los garajes */
-			if (e->getTipo() != garaje || this->conAuto) {
-				distancia = e->getCoordenadas().distancia(origen);
-				if (distancia < metros) {
-					int posicion = lineaEsta(paradasOrigen, e);
-					/* si la linea esta entre las candidatas pero esta estacion
-					 * esta mas cerca que la anterior, la agrego */
-					if (posicion > 0) {
-						int distanciaVieja = paradasOrigen.obtenerCursor()->getCoordenadas().distancia(origen);
-						if (distancia < distanciaVieja) {
-							paradasOrigen.remover(posicion);
-							paradasOrigen.agregar(e);
-						}
-					} else {
-						/* si la linea no esta todavia dentro de las candidatas, la agrego */
-						paradasOrigen.agregar(e);
-					}
-				}
-			}
-		}
-	}
-
-	/* si encontre lineas candidatas, busco un recorrido posible dentro de esas lineas */
-	if (!paradasOrigen.estaVacia()) {
-		recorrido = buscarRecorrido(paradasOrigen, origen, tipo);
-	}
-
-	/* devuelvo NULL si no encontre un recorrido */
-	return recorrido;
-}
-
-Recorrido* Camino::buscarRecorrido(Lista<Estacion*>& paradasOrigen, Coordenadas& origen, TipoEstacion tipo) {
-	Estacion* cercanaOrigen = NULL;
-	Estacion* cercanaDestino = NULL;
-	Recorrido* recorrido = NULL;
-	Lista<Estacion*> lineasRechazadas;
-	bool encontrado = false;
-
-	while (!encontrado) {
-		/* busco una estacion dentro de una lista de posibles lineas candidatas
-		 * que sea de un cierto tipo y este cerca de mi destino final, y tambien me quedo
-		 * con el origen correspondiente */
-		conseguirEstaciones(cercanaOrigen, cercanaDestino, paradasOrigen, lineasRechazadas, tipo);
-
-		/* si las dos estaciones que encontre son la misma, descarto la linea */
-		if (cercanaOrigen->getNombre().compare(cercanaDestino->getNombre()) == 0) {
-			lineasRechazadas.agregar(cercanaDestino);
-
-			/* si la cantidad de lineas descartas es igual a la cantidad
-			 * de lineas candidatas, dejo de buscar un recorrido
-			 */
-			if (lineasRechazadas.contarElementos() == paradasOrigen.contarElementos()) {
-				encontrado = true;
-			}
-		} else {
-			recorrido = new Recorrido(cercanaOrigen, cercanaDestino);
-			encontrado = true;
-		}
-	}
-
-	/* devulevo NULL si no encontre un recorrido */
-	return recorrido;
-}
-
-void Camino::conseguirEstaciones(Estacion*& cercanaOrigen, Estacion*& cercanaDestino, Lista<Estacion*> &paradasOrigen, Lista<Estacion*>& lineasRechazadas, TipoEstacion tipo) {
-	/* incializo la distancia minima con una distancia exageradamente grande */
-	double distanciaMinima = 100000000;
-
-	/* recorro la lista de medios de transporte buscando la estacion mas cercana
-	 * a mi destino final
-	 */
-	this->transportes->iniciarCursor();
-	while(this->transportes->avanzarCursor()) {
-		Estacion* e = this->transportes->obtenerCursor();
-
-		/* si tipo no es indefinido, descarto las estaciones que no coincidan con el tipo indicado */
-		if (tipo == indefinido || e->getTipo() == tipo) {
-
-			/* si no uso el auto descarto los garajes */
-			if (e->getTipo() != garaje || this->conAuto) {
-
-				/* solo me interesan la estaciones que pertenezcan a las lineas que pasan
-				 * cerca de mi origen y que no hayan sido rechazadas anteriormente
-				 */
-				if(lineaEsta(paradasOrigen, e) && !lineaEsta(lineasRechazadas, e)) {
-					double distancia = e->getCoordenadas().distancia(this->destino);
-					if (distancia < distanciaMinima) {
-						distanciaMinima = distancia;
-						cercanaDestino = e;
-						cercanaOrigen = paradasOrigen.obtenerCursor();
-					}
-				}
-			}
-		}
-	}
 }
 
 bool Camino::verificarPrecondiciones() {
@@ -192,57 +85,184 @@ void Camino::inicializarCamino() {
 	this->camino = new Lista<Recorrido*>;
 }
 
-bool Camino::estoyCerca(Recorrido*& recorrido, int distancia) {
-	return (recorrido->getDestino()->getCoordenadas().distancia(this->destino) < distancia);
+bool Camino::estoyCerca(Recorrido*& recorrido) {
+	return (recorrido->getDestino()->getCoordenadas().distancia(this->destino) < this->distanciaCaminar);
 }
 
-bool Camino::generarCamino(Coordenadas& origen, Coordenadas& destino, int distancia, TipoEstacion tipo, bool conAuto) {
-	Recorrido* recorrido;
-	bool hayCaminos = true;
+void Camino::encontrarParadasCercanas(const Coordenadas& origen, Lista<Estacion*>& paradasOrigen) {
+	double distancia;
+	this->transportes->iniciarCursor();
+
+	/* recorro la lista de medios de transporte buscando estaciones que esten a
+	 * "distanciaCaminar" de distancia del origen
+	 */
+	while(this->transportes->avanzarCursor()) {
+		Estacion* e = this->transportes->obtenerCursor();
+		distancia = e->getCoordenadas().distancia(origen);
+
+		/* si no uso el auto descarto los garajes */
+		if (e->getTipo() != garaje || this->conAuto) {
+			if (distancia < this->distanciaCaminar) {
+				int posicion = lineaEsta(paradasOrigen, e);
+				/* si la linea esta entre las candidatas pero esta estacion
+				 * esta mas cerca que la anterior, la agrego */
+				if (posicion > 0) {
+					int distanciaVieja = paradasOrigen.obtenerCursor()->getCoordenadas().distancia(origen);
+					if (distancia < distanciaVieja) {
+						paradasOrigen.remover(posicion);
+						paradasOrigen.agregar(e);
+					}
+				} else {
+					/* si la linea no esta todavia dentro de las candidatas, la agrego */
+					paradasOrigen.agregar(e);
+				}
+			}
+		}
+	}
+}
+
+Recorrido* Camino::generarRecorrido(Estacion* partida, double total, Recorrido* recorridoAnterior) {
+	double distanciaAlDestino = DISTANCIA_ABSURDA;
+	Estacion* llegada = NULL;
+	Recorrido* recorrido = NULL;
+	this->transportes->iniciarCursor();
+
+	while(transportes->avanzarCursor()) {
+		Estacion* e = this->transportes->obtenerCursor();
+
+		if (e->getTipo() == partida->getTipo() && e->getLinea().compare(partida->getLinea()) == 0) {
+			double distancia = e->getCoordenadas().distancia(this->destino);
+			if (distancia < distanciaAlDestino
+					&& partida->getCoordenadas().distancia(e->getCoordenadas()) > this->distanciaCaminar) {
+				distanciaAlDestino = distancia;
+				llegada = e;
+			}
+		}
+	}
+
+	if (llegada != NULL
+			&& !partida->esIgual(llegada)
+			&& this->destino.distancia(llegada->getCoordenadas()) <  this->destino.distancia(partida->getCoordenadas())) {
+		recorrido = new Recorrido(partida, llegada, total, recorridoAnterior);
+	}
+
+	return recorrido;
+}
+
+Recorrido* Camino::crearRecorrido(Lista<Estacion*>& nuevosOrigenes, int cantidadPorTipo[], double distanciaTotal, Recorrido* recorrido) {
+	Recorrido* nuevoRecorrido = NULL;
+	Estacion* nuevoOrigen = nuevosOrigenes.obtenerCursor();
+
+	cantidadPorTipo[nuevoOrigen->getTipo()]++;
+	if (cantidadPorTipo[nuevoOrigen->getTipo()] < MAX_CONEXIONES_POR_TIPO) {
+		nuevoRecorrido = this->generarRecorrido(nuevoOrigen, distanciaTotal, recorrido);
+	}
+
+	return nuevoRecorrido;
+}
+
+void Camino::agregarRecorrido(Recorrido* r, int conexiones) {
+	int cantidadPorTipo[5] = {0, 0, 0, 0, 0};
+	if (conexiones < MAX_CONEXIONES) {
+		if (r != NULL && r->getDestino()->getCoordenadas().distancia(this->destino) > this->distanciaCaminar) {
+			Lista<Estacion*> nuevosOrigenes;
+			this->encontrarParadasCercanas(r->getDestino()->getCoordenadas(), nuevosOrigenes);
+			nuevosOrigenes.iniciarCursor();
+			while(nuevosOrigenes.avanzarCursor()) {
+				Recorrido* nuevoRecorrido = this->crearRecorrido(nuevosOrigenes, cantidadPorTipo,r->getDistanciaTotal(), r);
+				if (nuevoRecorrido != NULL) {
+					r->getSiguientes()->agregar(nuevoRecorrido);
+					this->agregarRecorrido(nuevoRecorrido, conexiones + 1);
+				}
+			}
+		}
+	}
+}
+
+void Camino::crearCaminoMasCorto() {
+	this->camino->agregar(this->recorridoFinalDelCaminoMasCorto);
+	Recorrido* aux = this->recorridoFinalDelCaminoMasCorto->getAnterior();
+	while(aux != NULL) {
+		this->camino->agregar(aux, 1);
+		aux = aux->getAnterior();
+	}
+}
+
+void Camino::limpiarRecorridos(Recorrido* recorrido) {
+	if (recorrido != NULL) {
+		recorrido->getSiguientes()->iniciarCursor();
+		while(recorrido->getSiguientes()->avanzarCursor()) {
+			this->limpiarRecorridos(recorrido->getSiguientes()->obtenerCursor());
+		}
+		if (!this->buscarRecorridoEnCamino(recorrido)) {
+			delete recorrido;
+		}
+	}
+}
+
+bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int distancia, bool conAuto) {
+	bool caminoGenerado = false;
 
 	if (!verificarPrecondiciones()) {
 		return false;
 	}
 
+	Lista<Recorrido*> raices;
+	int cantidadPorTipo[5] = {0, 0, 0, 0, 0};
+
 	inicializarCamino();
 
-	this->origen = origen;
 	this->destino = destino;
-	this->preferencia = tipo;
+	this->distanciaCaminar = distancia;
 	this->conAuto = conAuto;
 
-	Coordenadas nuevoOrigen = origen;
-
-	do {
-		/* primero busco un recorrido utilizando el tipo de medio de transporte preferido,
-		 * si no se encuentra ningun recorrido busco otro utilizando culaquier tipo
-		 * de medio de transporte
-		 */
-		recorrido = generarRecorrido(nuevoOrigen, distancia, tipo);
-		if (recorrido == NULL) {
-			recorrido = generarRecorrido(nuevoOrigen, distancia, indefinido);
+	Lista<Estacion*> estacionesOrigen;
+	this->encontrarParadasCercanas(origen, estacionesOrigen);
+	estacionesOrigen.iniciarCursor();
+	while(estacionesOrigen.avanzarCursor()) {
+		Recorrido* nuevoRecorrido = this->crearRecorrido(estacionesOrigen, cantidadPorTipo, 0, NULL);
+		if (nuevoRecorrido != NULL) {
+			raices.agregar(nuevoRecorrido);
 		}
-		if (recorrido == NULL) {
-			/* no puedo llegar al destino final, no hay camino */
-			limpiarCamino();
-			hayCaminos = false;
-		} else{
-			this->camino->agregar(recorrido);
-			this->distanciaCamino += recorrido->calcularDistancia();
+	}
 
-			if (estoyCerca(recorrido, distancia)) {
-				/* llegue a mi destino final, fin del camino */
-				hayCaminos = false;
-			} else {
-				/* cambio el origen para que el proximo recorrido lo busque a partir
-				 * de hasta donde llegue con mi ultimo recorrido
-				 */
-				nuevoOrigen = recorrido->getDestino()->getCoordenadas();
+	raices.iniciarCursor();
+	while(raices.avanzarCursor()) {
+		this->agregarRecorrido(raices.obtenerCursor(), 0);
+	}
+
+	raices.iniciarCursor();
+	while(raices.avanzarCursor()) {
+		this->buscarCaminoMasCorto(raices.obtenerCursor());
+	}
+
+	if (this->recorridoFinalDelCaminoMasCorto != NULL) {
+		caminoGenerado = true;
+		this->origen = origen;
+		this->crearCaminoMasCorto();
+	}
+
+	raices.iniciarCursor();
+	while(raices.avanzarCursor()) {
+		this->limpiarRecorridos(raices.obtenerCursor());
+	}
+
+	return caminoGenerado;
+}
+
+void Camino::buscarCaminoMasCorto(Recorrido* r) {
+	if (r != NULL) {
+		if (this->estoyCerca(r)) {
+			if (r->getDistanciaTotal() < this->distanciaFinal) {
+				this->distanciaFinal = r->getDistanciaTotal();
+				this->recorridoFinalDelCaminoMasCorto = r;
 			}
 		}
-	} while(hayCaminos);
-
-	return true;
+		r->getSiguientes()->iniciarCursor();
+		while(r->getSiguientes()->avanzarCursor()) {
+			this->buscarCaminoMasCorto(r->getSiguientes()->obtenerCursor());
+		}
+	}
 }
 
 void Camino::setTransportes(Lista<Estacion*> *&transportes) {
@@ -250,16 +270,24 @@ void Camino::setTransportes(Lista<Estacion*> *&transportes) {
 }
 
 void Camino::imprimirCamino() {
-	std::cout << "Camino prefiriendo " << Estacion::TIPOS[this->preferencia] << ":" << std::endl;
+	//std::cout << "Camino prefiriendo " << Estacion::TIPOS[this->preferencia] << ":" << std::endl;
 	if (this->camino == NULL || this->camino->estaVacia()) {
 		std::cout << "No hay camino." << std::endl;
 	} else {
+		std::string tiempo;
+		std::stringstream strstream;
+		strstream << std::time(0);
+		strstream >> tiempo;
+
 		this->camino->iniciarCursor();
+
 		/*largo corresponde a una ubicacion dentro de la imagen bmp*/
 		unsigned int largo=50, contador=1;
+
 		/*se crea un archivo tipo bmp*/
 		BMP imagen;
 		int cantidad = this->camino->contarElementos();
+
 		/*configura el tamanio de la imagen ajustandose a la cantidad
 		 * de recorridos del camino */
 		imagen.SetSize(640*cantidad,480);
@@ -267,15 +295,19 @@ void Camino::imprimirCamino() {
 
 		while(this->camino->avanzarCursor()) {
 			Recorrido* recorrido = this->camino->obtenerCursor();
+
 			/*colorearRecorrido agrega las estaciones a la imagen*/
 			this->colorearRecorrido(imagen, recorrido, largo);
+
 			/*mientras queden recorridos se agregan uniones entre ellos*/
 			if(contador<(this->camino->contarElementos())){
 				/*colorearTrayecto agrega dichas uniones*/
 				this->colorearTrayecto(imagen, largo+395, largo+475);
 			}
+
 			/*se agregan los nombres de las estaciones de origen y destino*/
 			this->agregarTextos(imagen, largo, contador, recorrido);
+
 			/*se suma a largo el tamanio ocupado en la imagen de todo lo anterior
 			 * para continuar desde alli en la proxima iteracion*/
 			largo += 480;
@@ -286,8 +318,14 @@ void Camino::imprimirCamino() {
 					<< ": de " << recorrido->getOrigen()->getNombre()
 					<< " hasta " << recorrido->getDestino()->getNombre() << std::endl;
 		}
+
+		std::cout << "Distancia: " << this->distanciaFinal << " metros." << std::endl << std::endl;
+
 		/*se guarda la imagen en el archivo bmp*/
-		imagen.WriteToFile((std::string("imagenRecorrido-") + Estacion::TIPOS[this->preferencia] + std::string(".bmp")).c_str());
+		std::cout << "Generando imagen..." << std::endl;
+		std::string nombreArchivo = tiempo + ".bmp";
+		imagen.WriteToFile(nombreArchivo.c_str());
+		std::cout << "Imagen generada." << std::endl;
 	}
 	std::cout << std::endl;
 }
@@ -394,15 +432,13 @@ void Camino::agregarTextoAImagen(BMP& imagen, const char* texto, unsigned int x,
 	RGBApixel fontColor;
 	/*configura los valores de la paleta de colores*/
 	fontColor.Red = 255; fontColor.Green = 0; fontColor.Blue = 0; fontColor.Alpha = 255;
-	char* textoAImprimir;
-	textoAImprimir = new char[50];
+	char textoAImprimir[50];
 	/*se copia el texto del archivo a un puntero a char para agregar dicho texto a la imagen*/
 	strcpy(textoAImprimir, texto);
 	/*PrintString agrega el texto a la imagen en la ubicacion (x,y) con un tamanio de fuente
-	 * 20 y la paleta de colores configurada*/
+	 * 10 y la paleta de colores configurada*/
 	PrintString(imagen, textoAImprimir, x, y, 10, fontColor);
 	/*se libera la memoria*/
-	delete textoAImprimir;
 }
 
 void Camino::agregarTextos(BMP& imagen,unsigned int largo, unsigned int contador, Recorrido* recorrido){
@@ -415,8 +451,8 @@ void Camino::agregarTextos(BMP& imagen,unsigned int largo, unsigned int contador
 		const char* nombre = nombreTransporte.c_str();
 		this->agregarTextoAImagen(imagen, linea, largo, 290);
 		this->agregarTextoAImagen(imagen, nombre, largo, 315);
-	/*el mismo proceso pero para la ultima estacion del camino*/
 	}
+	/*el mismo proceso pero para la ultima estacion del camino*/
 	if(contador==(this->camino->contarElementos())){
 		std::string lineaTransporte = recorrido->getDestino()->getLinea();
 		const char* linea = lineaTransporte.c_str();
@@ -426,10 +462,3 @@ void Camino::agregarTextos(BMP& imagen,unsigned int largo, unsigned int contador
 		this->agregarTextoAImagen(imagen, nombre, largo+240, 315);
 	}
 }
-
-
-
-
-
-
-

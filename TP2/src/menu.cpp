@@ -1,59 +1,70 @@
 /*
  * pantalla.cpp
  *
- *      Autor: Cristian Kiper
- *      Padron: 100031
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #include <iostream>
 #include "menu.h"
 #include "coordenadas.h"
+#include "auxiliar.h"
+
+using namespace std;
 
 void Menu::mostrarMenuPrincipal() {
-	std::cout << "1 - Nuevo camino" << std::endl;
-	std::cout << "2 - Salir" << std::endl;
+	cout << "1 - Nuevo camino" << endl;
+	cout << "2 - Salir" << endl;
 }
 
 int Menu::pedirOpcion(int maximo) {
 	int opcion = 0;
 	while (opcion < 1 || opcion > maximo) {
-		std::cout << "Seleccione una opcion (1 - " << maximo << "): ";
-		while (!(std::cin >> opcion)) {
+		cout << "Seleccione una opcion (1 - " << maximo << "): ";
+		while (!(cin >> opcion)) {
 			// si se ingreso un tipo de dato invalido se vuelve a pedir
-			std::cin.clear();
-			std::cin.ignore();
+			cin.clear();
+			cin.ignore();
 		}
 	}
 	return opcion;
 }
 
-Coordenadas Menu::pedirCoordenadas(std::string texto, Coordenadas& minimo, Coordenadas& maximo) {
-	double latitud, longitud;
+Coordenadas Menu::pedirCoordenadas(string texto, Coordenadas& minimo, Coordenadas& maximo) {
+	string latitud, longitud;
+	double doubleLatitud, doubleLongitud;
 
-	std::cout << std::endl << "Ingrese coordenadas del " << texto << std::endl;
+	cout << endl << "Ingrese coordenadas del " << texto << endl;
 	do {
-		std::cout << "Latitud (de " << minimo.getLatitud() << " a " << maximo.getLatitud() << "): ";
-		std::cin >> latitud;
-	} while (latitud < minimo.getLatitud() || latitud > maximo.getLatitud());
+		cout << "Latitud (de " << minimo.getLatitud() << " a " << maximo.getLatitud() << "): ";
+		cin >> latitud;
+		doubleLatitud = stringADouble(latitud);
+		if (doubleLatitud < minimo.getLatitud() || doubleLatitud > maximo.getLatitud()) {
+			cout << "Fuera de rango, intente de nuevo." << endl;
+		}
+	} while (doubleLatitud < minimo.getLatitud() || doubleLatitud > maximo.getLatitud());
 	do {
-		std::cout << "Longitud (de " << minimo.getLongitud() << " a " << maximo.getLongitud() << "): ";
-		std::cin >> longitud;
-	} while (longitud < minimo.getLongitud() || longitud > maximo.getLongitud());
+		cout << "Longitud (de " << minimo.getLongitud() << " a " << maximo.getLongitud() << "): ";
+		cin >> longitud;
+		doubleLongitud = stringADouble(longitud);
+	} while (doubleLongitud < minimo.getLongitud() || doubleLongitud > maximo.getLongitud());
 
-	return Coordenadas(longitud, latitud);
+	return Coordenadas(doubleLongitud, doubleLatitud);
 }
 
 int Menu::pedirDistancia() {
 	int metros = 0;
 	while (metros <= 0) {
-		std::cout << "Ingrese los metros que esta dispuesto a caminar entre cada conexion: ";
-		while (!(std::cin >> metros)) {
+		cout << "Ingrese los metros que esta dispuesto a caminar entre cada conexion: ";
+		while (!(cin >> metros)) {
 			// si se ingreso un tipo de dato invalido se vuelve a pedir
-			std::cin.clear();
-			std::cin.ignore();
+			cin.clear();
+			cin.ignore();
 		}
 		if (metros <= 0) {
-			std::cout << "Por favor ingrese un numero mayor a 0." << std::endl;
+			cout << "Por favor ingrese un numero mayor a 0." << endl;
 		}
 	}
 
@@ -62,7 +73,7 @@ int Menu::pedirDistancia() {
 
 bool Menu::pedirAuto() {
 	bool respuesta = false;
-	std::cout << "Desea usar su auto?" << std::endl;
+	cout << "Desea usar su auto?" << endl;
 	mostrarSiNo();
 	int opcionMenu = pedirOpcion(2);
 	if (opcionMenu == 1) {
@@ -73,8 +84,8 @@ bool Menu::pedirAuto() {
 }
 
 void Menu::mostrarSiNo() {
-	std::cout << "1 - Si" << std::endl;
-	std::cout << "2 - No" << std::endl;
+	cout << "1 - Si" << endl;
+	cout << "2 - No" << endl;
 }
 
 

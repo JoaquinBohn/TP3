@@ -1,8 +1,10 @@
 /*
  * auxiliar.h
  *
- *      Autor: Cristian Kiper
- *      Padron: 100031
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #ifndef AUXILIAR_H_

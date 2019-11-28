@@ -1,8 +1,10 @@
 /*
  * pantalla.h
  *
- *      Autor: Cristian Kiper
- *      Padron: 100031
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #ifndef MENU_H_
@@ -31,21 +33,32 @@ public:
 	 */
 	static void mostrarMenuPrincipal();
 
-
+	/* pregunta al usuario si desea usar su auto, la respuesta
+	 * se utiliza para determinar si se tienen en cuenta los garajes
+	 */
+	static bool pedirAuto();
 
 	/**
 	 * Pide por pantalla que se ingrese un numero de 1 a un maximo.
 	 * Si el numero ingresado esta fuera de rango se lo vuelve a pedir.
 	 *
-	 * @param maximo el numero maximo que puede ser ingresado.
-	 * @return devuelve un entero indicando la opcion ingresada.
+	 * pre: maximo debe ser mayor a 1
+	 * post: devuelve la opcion ingresada
 	 */
-	static bool pedirAuto();
-
 	static int pedirOpcion(int maximo);
 
+	/* pide por pantalla que se ingresen coordenades de latitud y longitud
+	 *
+	 * post: devuelve las coordenadas ingresada, validando que no esten
+	 * por afuera de los limites de minimo y maximo
+	 */
 	static Coordenadas pedirCoordenadas(std::string texto, Coordenadas& minimo, Coordenadas& maximo);
 
+	/* le pide al usuario que ingrese la cantidad de metros que esta dispuesto a caminar
+	 *
+	 * pre: el numero ingresado deber ser mayor que 0
+	 * post: devuelve el numero ingresado
+	 */
 	static int pedirDistancia();
 };
 

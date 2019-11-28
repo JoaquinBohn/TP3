@@ -1,8 +1,10 @@
 /*
  * estacion.cpp
  *
- *  Created on: 23 oct. 2019
- *      Author: joaquin
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #include "estacion.h"
@@ -19,12 +21,11 @@ Estacion& Estacion::operator= (const Estacion& estacion) {
 	return *this;
 }
 
-Estacion::Estacion(TipoEstacion transporte, std::string id, std::string linea, std::string nombre, std::string direccion, Coordenadas coordenadas){
+Estacion::Estacion(TipoEstacion transporte, std::string id, std::string linea, std::string nombre, Coordenadas coordenadas){
 	this->tipoDeTransporte = transporte;
 	this->id = id;
 	this->lineaDeTransporte = linea;
 	this->nombre = nombre;
-	this->direccion = direccion;
 	this->coordenadas = coordenadas;
 }
 
@@ -66,8 +67,8 @@ bool Estacion::mismaLinea(Estacion estacion){
 bool Estacion::esIgual(Estacion*& estacion) {
 	bool sonIguales = false;
 
-	if (estacion->tipoDeTransporte == this->tipoDeTransporte
-			&& estacion->id.compare(this->id) == 0) {
+	if (this->tipoDeTransporte == estacion->tipoDeTransporte
+			&& this->id.compare(estacion->id) == 0) {
 		sonIguales = true;
 	}
 

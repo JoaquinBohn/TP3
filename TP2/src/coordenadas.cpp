@@ -1,8 +1,10 @@
 /*
  * coordenadas.cpp
  *
- *  Created on: 9 oct. 2019
- *      Author: joaquin
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #include "coordenadas.h"
@@ -29,11 +31,11 @@ Coordenadas::Coordenadas(double longitud, double latitud){
 
 Coordenadas::~Coordenadas(){};
 
-double Coordenadas::getLongitud(){
+double Coordenadas::getLongitud() const {
 	return this->longitud;
 }
 
-double Coordenadas::getLatitud(){
+double Coordenadas::getLatitud() const {
 	return this->latitud;
 }
 
@@ -45,7 +47,7 @@ void  Coordenadas::setLatitud(double latitud){
 	this->latitud = latitud;
 }
 
-double Coordenadas::distancia(Coordenadas &c){
+double Coordenadas::distancia(const Coordenadas &c) const {
 	double respuesta, restaLong, restaLat;
 	restaLong = (this->longitud - c.getLongitud()) * 111320;
 	restaLat = (this->latitud - c.getLatitud()) * 111320;

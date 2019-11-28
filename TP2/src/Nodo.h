@@ -10,7 +10,6 @@ template<class T> class Nodo {
     private:
 
         T dato;
-        double distancia;
 
         Nodo<T>* siguiente;
 
@@ -23,7 +22,6 @@ template<class T> class Nodo {
         Nodo(T dato) {
 
             this->dato = dato;
-            this->distancia = 0;
             this->siguiente = NULL;
         }
 

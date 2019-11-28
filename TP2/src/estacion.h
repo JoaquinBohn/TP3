@@ -1,8 +1,10 @@
 /*
  * estacion.h
  *
- *  Created on: 15 oct. 2019
- *      Author: joaquin
+ * Kiper, Cristian - padrón 100031.
+ * Ligan, Cesar - padrón 101860.
+ * Carbajal, Paulo - padrón 101311.
+ * Bohn Valiere, Joaquin - padrón 102814.
  */
 
 #ifndef ESTACION_H_
@@ -17,8 +19,7 @@ enum TipoEstacion {
 	subte = 1,
 	tren = 2,
 	metrobus = 3,
-	garaje = 4,
-	indefinido = 5
+	garaje = 4
 };
 
 class Estacion{
@@ -27,7 +28,6 @@ private:
 	std::string id;
 	std::string lineaDeTransporte;
 	std::string nombre;
-	std::string direccion;
 	Coordenadas coordenadas;
 
 public:
@@ -40,7 +40,7 @@ public:
 	 * 				 un objeto de coordenadas.
 	 * Postcondicion: crea una estacion.
 	 */
-	Estacion(TipoEstacion transporte, std::string id, std::string linea, std::string nombre, std::string direccion, Coordenadas coordenadas);
+	Estacion(TipoEstacion transporte, std::string id, std::string linea, std::string nombre, Coordenadas coordenadas);
 
 	/*Destructor
 	 * nada
