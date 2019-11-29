@@ -200,6 +200,25 @@ void Camino::limpiarRecorridos(Recorrido* recorrido) {
 	}
 }
 
+double Camino::obtenerPrecio(){
+	double precio = 0;
+	unsigned int tiposDeTransportes[5];
+	this->camino->iniciarCursor();
+	while(this->camino->avanzarCursor()){
+		Recorrido* r = this->camino->obtenerCursor();
+		TipoEstacion estacion = r->getOrigen()->getTipo();
+		tiposDeTransportes[estacion] = 1;
+	}
+	for(unsigned int i=0; i<5; i++){
+		if(tiposDeTransportes[i]==1){
+			precio += PreciosTransportes[i];
+		}
+	}
+	return precio;
+}
+
+
+
 bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int distancia, bool conAuto) {
 	bool caminoGenerado = false;
 

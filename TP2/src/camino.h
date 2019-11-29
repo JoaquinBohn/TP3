@@ -243,6 +243,8 @@ public:
 	 */
 	bool generarCaminos(Coordenadas& origen, Coordenadas& destino, int distancia, bool conAuto);
 
+	double obtenerPrecio();
+
 };
 
 

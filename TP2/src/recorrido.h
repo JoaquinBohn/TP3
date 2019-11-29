@@ -31,9 +31,6 @@ private:
 	/* el recorrido anterior dentro de un camino */
 	Recorrido* anterior;
 
-	/* el valor que se le asigna a este recorrido, segun el tipo de transporte y la distancia recorrida */
-	double precio;
-
 public:
 	Recorrido(Estacion*, Estacion*, double distanciaAnterior, Recorrido* anterior);
 	~Recorrido();
