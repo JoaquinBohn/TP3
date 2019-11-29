@@ -24,7 +24,8 @@ Camino::Camino(Lista<Estacion*>* transportes) {
 	this->transportes = transportes;
 	this->conAuto = false;
 	this->recorridoFinalDelCaminoMasCorto = NULL;
-	this->distanciaFinal = DISTANCIA_ABSURDA;
+	this->distanciaTotal = DISTANCIA_ABSURDA;
+	this->precioTotal = 0;
 	this->distanciaCaminar = 0;
 }
 
@@ -82,6 +83,9 @@ void Camino::limpiarCamino() {
 
 void Camino::inicializarCamino() {
 	limpiarCamino();
+	this->distanciaTotal = DISTANCIA_ABSURDA;
+	this->precioTotal = 0;
+	this->recorridoFinalDelCaminoMasCorto = NULL;
 	this->camino = new Lista<Recorrido*>;
 }
 
@@ -181,9 +185,11 @@ void Camino::agregarRecorrido(Recorrido* r, int conexiones) {
 
 void Camino::crearCaminoMasCorto() {
 	this->camino->agregar(this->recorridoFinalDelCaminoMasCorto);
+	this->precioTotal += this->recorridoFinalDelCaminoMasCorto->getPrecio();
 	Recorrido* aux = this->recorridoFinalDelCaminoMasCorto->getAnterior();
 	while(aux != NULL) {
 		this->camino->agregar(aux, 1);
+		this->precioTotal += aux->getPrecio();
 		aux = aux->getAnterior();
 	}
 }
@@ -199,25 +205,6 @@ void Camino::limpiarRecorridos(Recorrido* recorrido) {
 		}
 	}
 }
-
-double Camino::obtenerPrecio(){
-	double precio = 0;
-	unsigned int tiposDeTransportes[5];
-	this->camino->iniciarCursor();
-	while(this->camino->avanzarCursor()){
-		Recorrido* r = this->camino->obtenerCursor();
-		TipoEstacion estacion = r->getOrigen()->getTipo();
-		tiposDeTransportes[estacion] = 1;
-	}
-	for(unsigned int i=0; i<5; i++){
-		if(tiposDeTransportes[i]==1){
-			precio += PreciosTransportes[i];
-		}
-	}
-	return precio;
-}
-
-
 
 bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int distancia, bool conAuto) {
 	bool caminoGenerado = false;
@@ -272,8 +259,8 @@ bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int dista
 void Camino::buscarCaminoMasCorto(Recorrido* r) {
 	if (r != NULL) {
 		if (this->estoyCerca(r)) {
-			if (r->getDistanciaTotal() < this->distanciaFinal) {
-				this->distanciaFinal = r->getDistanciaTotal();
+			if (r->getDistanciaTotal() < this->distanciaTotal) {
+				this->distanciaTotal = r->getDistanciaTotal();
 				this->recorridoFinalDelCaminoMasCorto = r;
 			}
 		}
@@ -335,10 +322,12 @@ void Camino::imprimirCamino() {
 			std::cout << Estacion::TIPOS[recorrido->getOrigen()->getTipo()] << " "
 					<< recorrido->getOrigen()->getLinea()
 					<< ": de " << recorrido->getOrigen()->getNombre()
-					<< " hasta " << recorrido->getDestino()->getNombre() << std::endl;
+					<< " hasta " << recorrido->getDestino()->getNombre()
+					<< ", $" << recorrido->getPrecio() << std::endl;
 		}
 
-		std::cout << "Distancia: " << this->distanciaFinal << " metros." << std::endl << std::endl;
+		std::cout << "Distancia: " << this->distanciaTotal << " metros" << std::endl;
+		std::cout << "Precio: $" << this->precioTotal << std::endl << std::endl;
 
 		/*se guarda la imagen en el archivo bmp*/
 		std::cout << "Generando imagen..." << std::endl;

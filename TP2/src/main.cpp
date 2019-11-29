@@ -24,7 +24,6 @@ void armarCaminos(Transporte& transporte) {
 	cout << endl << "Armando caminos..." << endl << endl;
 	caminoGenerado = camino.generarCaminos(origen, destino, distancia, conAuto);
 	if (caminoGenerado) {
-		camino.obtenerPrecio();
 		camino.imprimirCamino();
 	} else {
 		cout << "No se pudo armar un camino." << endl << endl;

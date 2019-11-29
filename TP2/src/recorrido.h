@@ -31,6 +31,23 @@ private:
 	/* el recorrido anterior dentro de un camino */
 	Recorrido* anterior;
 
+	/* el valor que se le asigna a este recorrido, segun el tipo de transporte y la distancia recorrida */
+	double precio;
+
+	/* calcula la distancias entre el origen y el destino del recorrido
+	 *
+	 * pre: origen y destino no deben ser NULL
+	 * post: devuelve la distancia calculada
+	 */
+	double calcularDistancia();
+
+	/* calcula el precio para el recorrido
+	 *
+	 * pre: origen y destino no deben ser NULL
+	 * post: devuelve el precio calculado
+	 */
+	double calcularPrecio();
+
 public:
 	Recorrido(Estacion*, Estacion*, double distanciaAnterior, Recorrido* anterior);
 	~Recorrido();
@@ -38,6 +55,7 @@ public:
 	Estacion* getOrigen();
 	Estacion* getDestino();
 	double getDistanciaTotal();
+	double getPrecio();
 	void setDestino(Estacion*&);
 	void setOrigen(Estacion*&);
 	Lista<Recorrido*>* getSiguientes();
@@ -49,12 +67,6 @@ public:
 	 * post: devuelve true si el origen y destino de los recorridos coinciden
 	 */
 	bool esIgual(Recorrido*& recorrido);
-
-	/* calcula la distancias entre el origen y el destino del recorrido
-	 *
-	 * post: devuelve la distancia calculada
-	 */
-	double calcularDistancia();
 };
 
 #endif /* RECORRIDO_H_ */

@@ -35,8 +35,11 @@ private:
 	/* puntero al ultimo recorrido del camino mas corto de todos los caminos generados */
 	Recorrido* recorridoFinalDelCaminoMasCorto;
 
-	/* la distancia final del camino, es la distincia minima entre todos los caminos generados */
-	double distanciaFinal;
+	/* la distancia total del camino, es la distincia minima entre todos los caminos generados */
+	double distanciaTotal;
+
+	/* el precio total del camino */
+	double precioTotal;
 
 	/* lista de medios de transporte a utilizar para armar un camino */
 	Lista<Estacion*>* transportes;
@@ -242,8 +245,6 @@ public:
 	 * post: devuelve true si se pudo generar un camino, false en caso contrario
 	 */
 	bool generarCaminos(Coordenadas& origen, Coordenadas& destino, int distancia, bool conAuto);
-
-	double obtenerPrecio();
 
 };
 
