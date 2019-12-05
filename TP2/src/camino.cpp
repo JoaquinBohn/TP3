@@ -166,17 +166,32 @@ Recorrido* Camino::crearRecorrido(Lista<Estacion*>& nuevosOrigenes, int cantidad
 }
 
 void Camino::agregarRecorrido(Recorrido* r, int conexiones) {
+	/* se usa para limitar la cantidad de estaciones de un mismo tipo de
+	 * medio de transporte (para optimizar el rendimiento del codigo)
+	 */
 	int cantidadPorTipo[5] = {0, 0, 0, 0, 0};
 	if (conexiones < MAX_CONEXIONES) {
 		if (r != NULL && r->getDestino()->getCoordenadas().distancia(this->destino) > this->distanciaCaminar) {
 			Lista<Estacion*> nuevosOrigenes;
+
+			/* consigo estaciones de partida para mis proximos recorridos */
 			this->encontrarParadasCercanas(r->getDestino()->getCoordenadas(), nuevosOrigenes);
 			nuevosOrigenes.iniciarCursor();
 			while(nuevosOrigenes.avanzarCursor()) {
 				Recorrido* nuevoRecorrido = this->crearRecorrido(nuevosOrigenes, cantidadPorTipo,r->getDistanciaTotal(), r);
 				if (nuevoRecorrido != NULL) {
+					/* agrego el reccorido como posible recorrido siguiente de mi camino */
 					r->getSiguientes()->agregar(nuevoRecorrido);
-					this->agregarRecorrido(nuevoRecorrido, conexiones + 1);
+					if (this->estoyCerca(nuevoRecorrido)) {
+						/* si llegue a mi destino me fijo si es el camino mas corto de los que tengo hasta ahora */
+						if (nuevoRecorrido->getDistanciaTotal() < this->distanciaTotal) {
+							this->distanciaTotal = nuevoRecorrido->getDistanciaTotal();
+							this->recorridoFinalDelCaminoMasCorto = nuevoRecorrido;
+						}
+					} else {
+						/* si no llegue a mi destino busco un recorrido mas para este camino */
+						this->agregarRecorrido(nuevoRecorrido, conexiones + 1);
+					}
 				}
 			}
 		}
@@ -214,6 +229,10 @@ bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int dista
 	}
 
 	Lista<Recorrido*> raices;
+
+	/* se usa para limitar la cantidad de estaciones de un mismo tipo de
+	 * medio de transporte (para optimizar el rendimiento del codigo)
+	 */
 	int cantidadPorTipo[5] = {0, 0, 0, 0, 0};
 
 	inicializarCamino();
@@ -222,6 +241,7 @@ bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int dista
 	this->distanciaCaminar = distancia;
 	this->conAuto = conAuto;
 
+	/* busco las estaciones de partida de mis posibles caminos */
 	Lista<Estacion*> estacionesOrigen;
 	this->encontrarParadasCercanas(origen, estacionesOrigen);
 	estacionesOrigen.iniciarCursor();
@@ -232,43 +252,30 @@ bool Camino::generarCaminos(Coordenadas& origen, Coordenadas& destino, int dista
 		}
 	}
 
+	/* arma todos los recorridos posibles y guarda una referencia al ultimo tramo
+	 * del camino mas corto
+	 */
 	raices.iniciarCursor();
 	while(raices.avanzarCursor()) {
 		this->agregarRecorrido(raices.obtenerCursor(), 0);
 	}
 
-	raices.iniciarCursor();
-	while(raices.avanzarCursor()) {
-		this->buscarCaminoMasCorto(raices.obtenerCursor());
-	}
-
+	/* si se pudo llegar al destino, arma un camino utilizando el recorrido
+	 * guardado en el paso anterior
+	 */
 	if (this->recorridoFinalDelCaminoMasCorto != NULL) {
 		caminoGenerado = true;
 		this->origen = origen;
 		this->crearCaminoMasCorto();
 	}
 
+	/* limpio de la memoria los recorridos que no sirvieron */
 	raices.iniciarCursor();
 	while(raices.avanzarCursor()) {
 		this->limpiarRecorridos(raices.obtenerCursor());
 	}
 
 	return caminoGenerado;
-}
-
-void Camino::buscarCaminoMasCorto(Recorrido* r) {
-	if (r != NULL) {
-		if (this->estoyCerca(r)) {
-			if (r->getDistanciaTotal() < this->distanciaTotal) {
-				this->distanciaTotal = r->getDistanciaTotal();
-				this->recorridoFinalDelCaminoMasCorto = r;
-			}
-		}
-		r->getSiguientes()->iniciarCursor();
-		while(r->getSiguientes()->avanzarCursor()) {
-			this->buscarCaminoMasCorto(r->getSiguientes()->obtenerCursor());
-		}
-	}
 }
 
 void Camino::setTransportes(Lista<Estacion*> *&transportes) {

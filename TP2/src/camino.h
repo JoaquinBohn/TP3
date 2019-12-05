@@ -117,15 +117,6 @@ private:
 	 */
 	void agregarRecorrido(Recorrido* r, int conexiones);
 
-	/* busca entre los caminos armados cual es el mas corto basandose en la distantciaTotal del
-	 * ultimo recorrido de cada camino
-	 *
-	 * pre : se deben haber armado los caminos candidatos previamente
-	 * post : modifica recorridoFinalDelCaminoMasCorto para que apunte al ultimo recorrido
-	 * 		  del camino mas corto
-	 */
-	void buscarCaminoMasCorto(Recorrido* r);
-
 	/* arma una lista con los recorridos pertenecientes al camino mas corto
 	 *
 	 * pre : recorridoFinalDelCaminoMasCorto debe haber sido previamente
