@@ -17,6 +17,7 @@ using namespace std;
 void Menu::mostrarMenuPrincipal() {
 	cout << "1 - Nuevo camino" << endl;
 	cout << "2 - Salir" << endl;
+	cout << "Cambio" << endl;
 }
 
 int Menu::pedirOpcion(int maximo) {
